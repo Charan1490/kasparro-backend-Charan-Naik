@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: crypto_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-crypto_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-crypto_password}
+      POSTGRES_DB: ${POSTGRES_DB:-crypto_db}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crypto_user -d crypto_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - crypto_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crypto_etl_backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-crypto_user}:${POSTGRES_PASSWORD:-crypto_password}@postgres:5432/${POSTGRES_DB:-crypto_db}
+      COINPAPRIKA_API_KEY: ${COINPAPRIKA_API_KEY}
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
+      APP_ENV: ${APP_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ETL_SCHEDULE_MINUTES: ${ETL_SCHEDULE_MINUTES:-30}
+      ENABLE_ETL_ON_STARTUP: ${ENABLE_ETL_ON_STARTUP:-true}
+      COINPAPRIKA_RATE_LIMIT: ${COINPAPRIKA_RATE_LIMIT:-10}
+      COINGECKO_RATE_LIMIT: ${COINGECKO_RATE_LIMIT:-50}
+      ENABLE_METRICS: ${ENABLE_METRICS:-true}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data:ro
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - crypto_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  crypto_network:
+    driver: bridge
