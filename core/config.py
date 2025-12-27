@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """Application settings."""
     
     # Database
-    DATABASE_URL: str = Field(
+    database_url: str = Field(
         default="postgresql://postgres:postgres@localhost:5432/crypto_etl",
         description="PostgreSQL connection string",
         validation_alias="DATABASE_URL"
