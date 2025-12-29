@@ -456,6 +456,135 @@ docker-compose exec postgres psql -U crypto_user -d crypto_db
 - Verify rate limit settings in `.env`
 - Review logs for backoff behavior
 
+## ✅ Deployment Verification
+
+### Live Production Deployment
+
+**Production URL**: https://kasparro-backend-charan-naik.onrender.com
+**Platform**: Render.com
+**Status**: ✅ LIVE AND OPERATIONAL
+
+### Verify Deployment from Code
+
+This project includes comprehensive deployment verification:
+
+#### 1. Automated Verification Script
+```bash
+# Run the deployment verification script
+./verify-deployment.sh
+```
+
+This script verifies:
+- ✅ API is accessible
+- ✅ Database connection
+- ✅ ETL pipeline operational
+- ✅ All endpoints responding
+- ✅ HTTPS certificate valid
+- ✅ Prometheus metrics available
+
+#### 2. Manual Verification Commands
+
+```bash
+# Health check
+curl https://kasparro-backend-charan-naik.onrender.com/health
+
+# Get cryptocurrency data
+curl "https://kasparro-backend-charan-naik.onrender.com/data?limit=5"
+
+# View ETL statistics
+curl https://kasparro-backend-charan-naik.onrender.com/stats
+
+# Interactive API docs
+open https://kasparro-backend-charan-naik.onrender.com/docs
+```
+
+#### 3. Deployment Configuration Files
+
+The deployment is verifiable from the codebase:
+
+- **`render.json`** - Render Blueprint with exact service configuration
+- **`render.yaml`** - Infrastructure-as-code deployment specification
+- **`Dockerfile`** - Production container configuration
+- **`DEPLOYMENT_VERIFICATION.md`** - Comprehensive deployment documentation
+- **`verify-deployment.sh`** - Automated verification script
+
+#### 4. Expected Responses
+
+**Health Endpoint** (`/health`):
+```json
+{
+  "status": "healthy",
+  "database": "connected",
+  "etl_status": {
+    "sources": {
+      "csv": "success",
+      "coinpaprika": "success",
+      "coingecko": "failure"
+    }
+  }
+}
+```
+*Note: CoinGecko may show "failure" due to rate limiting on free tier (expected)*
+
+**Data Endpoint** (`/data?limit=3`):
+```json
+{
+  "data": [
+    {
+      "coin_id": "btc-bitcoin",
+      "symbol": "BTC",
+      "name": "Bitcoin",
+      "current_price": 87440.0,
+      "market_cap": 1745978218739.0,
+      ...
+    }
+  ],
+  "metadata": {
+    "total_count": 115,
+    "page": 1,
+    "page_size": 50
+  }
+}
+```
+
+#### 5. Deployment Architecture
+
+```
+GitHub Repository (main branch)
+    ↓
+Render.com (Auto-deploy on push)
+    ↓
+Docker Build (Multi-stage)
+    ↓
+Container Deployment
+    ↓
+PostgreSQL Database (Render)
+    ↓
+Public HTTPS Endpoint
+```
+
+### Deployment Evidence
+
+1. **Code-Based Proof**:
+   - `render.json` blueprint matches deployed configuration
+   - Dockerfile builds successfully
+   - Environment variables properly configured
+   - Health checks implemented
+
+2. **Runtime Proof**:
+   - Live API responses from production URL
+   - Database connectivity verified via `/health`
+   - ETL pipeline execution shown in `/stats`
+   - 115+ cryptocurrency records loaded
+
+3. **Infrastructure Proof**:
+   - HTTPS certificate valid (Render-provided SSL)
+   - Render headers in HTTP responses
+   - GitHub integration active (auto-deploy)
+   - PostgreSQL database operational
+
+See `DEPLOYMENT_VERIFICATION.md` for complete deployment verification documentation.
+
 ## 📄 License
 
 This project is part of the Kasparro internship assignment.
