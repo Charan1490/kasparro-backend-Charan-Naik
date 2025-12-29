@@ -1,0 +1,40 @@
+{
+  "services": [
+    {
+      "type": "web",
+      "name": "crypto-etl-backend",
+      "env": "docker",
+      "plan": "free",
+      "region": "oregon",
+      "dockerfilePath": "./Dockerfile",
+      "envVars": [
+        {
+          "key": "ENVIRONMENT",
+          "value": "production"
+        },
+        {
+          "key": "LOG_LEVEL",
+          "value": "INFO"
+        },
+        {
+          "key": "DATABASE_URL",
+          "fromDatabase": {
+            "name": "crypto-postgres",
+            "property": "connectionString"
+          }
+        }
+      ],
+      "healthCheckPath": "/health",
+      "autoDeploy": true
+    },
+    {
+      "type": "pserv",
+      "name": "crypto-postgres",
+      "env": "docker",
+      "plan": "free",
+      "region": "oregon",
+      "databaseName": "crypto_etl",
+      "databaseUser": "crypto_user"
+    }
+  ]
+}
